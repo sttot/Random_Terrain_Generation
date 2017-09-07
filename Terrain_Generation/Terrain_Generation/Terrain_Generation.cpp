@@ -3,13 +3,20 @@
 #include <vector>
 #include <time.h>
 
-#include <GL/glew.h>
-#include <GL/freeglut.h>
-#include <GL/glext.h>
+#include "glew-1.10.0\include\GL\glew.h"
+#include "glew-1.10.0\include\GL\glext.h"
+#include "freeglut-MSVC-2.8.1-1.mp\include\GL\freeglut.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include "glm-0.9.6.3\glm\glm.hpp"
+#include "glm-0.9.6.3\glm\gtc\matrix_transform.hpp"
+#include "glm-0.9.6.3\glm\gtc\type_ptr.hpp"
+
+//#include <GL/glew.h>
+//#include <GL/glext.h>
+//
+//#include <glm/glm.hpp>
+//#include <glm/gtc/matrix_transform.hpp>
+//#include <glm/gtc/type_ptr.hpp>
 
 #pragma comment(lib, "glew32.lib") 
 
