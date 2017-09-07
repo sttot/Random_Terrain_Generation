@@ -1,6 +1,29 @@
-﻿Build started 07/09/2017 17:56:44.
+﻿Build started 07/09/2017 18:11:01.
      1>Project "D:\_Project_Repos\Random_Terrain_Generation\Terrain_Generation\Terrain_Generation\Terrain_Generation.vcxproj" on node 2 (Build target(s)).
-     1>Link:
+     1>ClCompile:
+         D:\Visual Studio\VC\bin\CL.exe /c /I"freeglut-MSVC-2.8.1-1.mp\include" /I"glew-1.10.0\include" /I"glm-0.9.6.3" /Zi /nologo /W3 /WX- /O2 /Oi /Oy- /GL /D _CRT_SECURE_NO_WARNINGS /D WIN32 /D NDEBUG /D _CONSOLE /D _LIB /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt Terrain_Generation.cpp
+         Terrain_Generation.cpp
+     1>Terrain_Generation.cpp(144): warning C4305: 'initializing' : truncation from 'double' to 'float'
+     1>Terrain_Generation.cpp(241): warning C4244: 'argument' : conversion from 'time_t' to 'unsigned int', possible loss of data
+     1>Terrain_Generation.cpp(242): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>Terrain_Generation.cpp(243): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>Terrain_Generation.cpp(244): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>Terrain_Generation.cpp(245): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>Terrain_Generation.cpp(263): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>Terrain_Generation.cpp(289): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>Terrain_Generation.cpp(290): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>Terrain_Generation.cpp(294): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>Terrain_Generation.cpp(295): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>Terrain_Generation.cpp(299): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>Terrain_Generation.cpp(300): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>Terrain_Generation.cpp(313): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>Terrain_Generation.cpp(314): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>Terrain_Generation.cpp(318): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>Terrain_Generation.cpp(319): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>Terrain_Generation.cpp(323): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>Terrain_Generation.cpp(324): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>Terrain_Generation.cpp(479): warning C4244: 'argument' : conversion from 'unsigned int' to 'const float', possible loss of data
+       Link:
          D:\Visual Studio\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\_Project_Repos\Random_Terrain_Generation\Terrain_Generation\Release\Terrain_Generation.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:"glew-1.10.0\lib\Release\Win32" /LIBPATH:"freeglut-MSVC-2.8.1-1.mp\lib" /LIBPATH:"glew-1.10.0\lib" opengl32.lib freeglut.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:\_Project_Repos\Random_Terrain_Generation\Terrain_Generation\Release\Terrain_Generation.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\_Project_Repos\Random_Terrain_Generation\Terrain_Generation\Release\Terrain_Generation.lib" /MACHINE:X86 /SAFESEH Release\Terrain_Generation.obj
          Generating code
          Finished generating code
@@ -9,4 +32,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:00.97
+Time Elapsed 00:00:02.21
