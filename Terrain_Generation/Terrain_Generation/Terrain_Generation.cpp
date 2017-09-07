@@ -16,26 +16,40 @@
 using namespace std;
 using namespace glm;
 
-// Size of the terrain
-const int MAP_SIZE = 33;
+//////////////////////////////
+//							//
+// Constant Initialisers	//
+//							//
+//////////////////////////////
 
+//////////////////////////////////////////////////////////
+//														//
+// Terrain Size											//
+//														//
+// WARNING - System breaks when MAP_SIZE >= 31			//
+//														//
+//////////////////////////////////////////////////////////
+
+const int MAP_SIZE = 29;
+
+// Window Size Parameters
 const int SCREEN_WIDTH = 1024;
 const int SCREEN_HEIGHT = 1024;
 
+// Used in Diamond-Square
 short int step_size = MAP_SIZE - 1;
+
 // Initialise terrain - set values in the height map to 0
 float terrain[MAP_SIZE][MAP_SIZE] = {};	
 
-struct Vertex
-{
+struct Vertex {
 	float colors[4];
 
 	vec4 coords;
 	vec3 normals;
 };
 
-struct Matrix4x4
-{
+struct Matrix4x4 {
 	float entries[16];
 };
 
@@ -43,8 +57,7 @@ static mat4 projMat = mat4(1.0);
 
 mat4 modelViewMat = mat4(1.0);
 
-static const Matrix4x4 IDENTITY_MATRIX4x4 =
-{
+static const Matrix4x4 IDENTITY_MATRIX4x4 =	{
 	{
 		1.0, 0.0, 0.0, 0.0,
 		0.0, 1.0, 0.0, 0.0,
@@ -68,8 +81,7 @@ unsigned int terrainIndexData[numStripsRequired][verticesPerStrip];
 static const vec4 globAmb = vec4(0.2, 0.2, 0.2, 1.0);
 
 // Material Struct 
-struct Material
-{
+struct Material {
 	vec4 ambRefl;
 	vec4 difRefl;
 	vec4 specRefl;
@@ -78,8 +90,7 @@ struct Material
 };
 
 // Light Struct 
-struct Light
-{
+struct Light {
 	vec4 ambCols;
 	vec4 difCols;
 	vec4 specCols;
@@ -87,16 +98,14 @@ struct Light
 };
 
 // Normal Calc Struct
-struct TriNorm
-{
+struct TriNorm {
 	vec3 PointOne;
 	vec3 PointTwo;
 	vec3 PointThree;
 };
 
 // Front and back material Properties 
-static const Material terrainFandB =
-{
+static const Material terrainFandB = {
 	vec4(1.0, 1.0, 1.0, 1.0),
 	vec4(1.0, 1.0, 1.0, 1.0),
 	vec4(1.0, 1.0, 1.0, 1.0),
@@ -105,8 +114,7 @@ static const Material terrainFandB =
 };
 
 // Light constructor 
-static const Light light0 =
-{
+static const Light light0 = {
 	vec4(0.0, 0.0, 0.0, 1.0),
 	vec4(1.0, 1.0, 1.0, 1.0),
 	vec4(1.0, 1.0, 1.0, 1.0),
@@ -115,8 +123,14 @@ static const Light light0 =
 
 float strafe = 0.25f;
 
+//////////////////////////////
+//							//
+// Camera Initialisation	//
+//							//
+//////////////////////////////
+
 // Camera vector definers - Same as (eye, centre, up)
-vec3 camera(-3.0f, 0.0f, 33.0f);	// Test variable camera 
+vec3 camera(-3.0f, 0.0f, 33.0f);	// Variable camera 
 vec3 centre(0, 0, 0);				// Point for Camera to look at 
 vec3 up(0, 180, 0);					// Camera rotation vector
 
@@ -125,10 +139,7 @@ float speed = 0.2;
 float cameraTheta = 0;			// Camera Angle Rotation
 float cameraPhi = 0;			// 3D Camera Angle Rotation 
 
-// Camera Control
-vec3 los(0.0, 0.0, -1.0);
-
-//vec3 strafe = cross(LoS, up);	// Used to strafe Camera
+vec3 los(0.0, 0.0, -1.0);		// Camera Control
 
 static unsigned int
 programId,
@@ -143,8 +154,7 @@ texture[1],
 grassTexLoc;
 
 // Function to read text file, used to read shader files
-char* readTextFile(char* aTextFile)
-{
+char* readTextFile(char* aTextFile) {
 	FILE* filePointer = fopen(aTextFile, "rb");
 	char* content = NULL;
 	long numVal = 0;
@@ -159,24 +169,26 @@ char* readTextFile(char* aTextFile)
 	return content;
 }
 
-// Diamond Step - Working
-// Average height of 4 points (full terrain in this example) + random added height
-void diamondStep(int x, int y)
-{
+//////////////////////////////////////////////////////////
+//														//
+// Diamond Square Algorithm								//
+//														//
+// Average height of 4 points + random added height		//
+//														//
+//////////////////////////////////////////////////////////
+
+void diamondStep(int x, int y) {
 	terrain[x + (step_size / 2)][y + (step_size / 2)] = ((terrain[x][y] + terrain[x][y + step_size] + terrain[x + step_size][y] + terrain[x + step_size][y + step_size]) / 4) + rand() % 3 - 1;
 }
 
-void squareStep(int x, int y)
-{
-	if (step_size == (MAP_SIZE - 1))
-	{
+void squareStep(int x, int y) {
+	if (step_size == (MAP_SIZE - 1)) {
 		terrain[x + (step_size / 2)][y] = ((terrain[x][y] + terrain[step_size][y] + terrain[step_size / 2][step_size / 2] + terrain[step_size / 2][step_size / 2]) / 4) + rand() % 3 - 1;	// Top 
 		terrain[x][y + (step_size / 2)] = ((terrain[x][y] + terrain[x][step_size] + terrain[step_size / 2][step_size / 2] + terrain[step_size / 2][step_size / 2]) / 4) + rand() % 3 - 1;	// Left 
 		terrain[x + step_size][y + (step_size / 2)] = ((terrain[step_size][y] + terrain[step_size][step_size] + terrain[step_size / 2][step_size / 2] + terrain[step_size / 2][step_size / 2]) / 4) + rand() % 3 - 1;	// Right
 		terrain[x + (step_size / 2)][y + step_size] = ((terrain[x][step_size] + terrain[step_size / 2][step_size / 2] + terrain[step_size / 2][step_size / 2] + terrain[step_size][step_size]) / 4) + rand() % 3 - 1;	// Bottom
 	}
-	else
-	{
+	else {
 		terrain[x + (step_size / 2)][y] = ((terrain[x][y] + terrain[x][step_size] + terrain[step_size][y] + terrain[step_size][step_size]) / 4) + rand() % 3 - 1;
 		terrain[x][y + (step_size / 2)] = ((terrain[x][y] + terrain[x][step_size] + terrain[step_size][y] + terrain[step_size][step_size]) / 4) + rand() % 3 - 1;
 		terrain[x + (step_size)][y + (step_size / 2)] = ((terrain[x][y] + terrain[x][step_size] + terrain[step_size][y] + terrain[step_size][step_size]) / 4) + rand() % 3 - 1;
@@ -184,7 +196,12 @@ void squareStep(int x, int y)
 	}
 }
 
-// Test if shader is working properly or not
+//////////////////////////////////
+//								//
+// Built-in shader test			//
+//								//
+//////////////////////////////////
+
 void shaderCompileTest(GLuint shader)
 {
 	GLint result = GL_FALSE;
@@ -196,18 +213,20 @@ void shaderCompileTest(GLuint shader)
 	cout << &vertShaderError[0] << std::endl;
 }
 
-// Initialisation routine.
-void setup(void)
-{
-	vec4 colorsExport;					// Ambient Light Value
+//////////////////////////////////
+//								//
+// Initialisation routine		//
+//								//
+//////////////////////////////////
 
-	float rand_max = 1.0;				// Maximum random value
-	float H = 1.0;						// Roughness co-efficient
+void setup(void) {
+	vec4 colorsExport;		// Ambient Light Value
 
-	for (int x = 0; x < MAP_SIZE; x++)
-	{
-		for (int z = 0; z < MAP_SIZE; z++)
-		{
+	float rand_max = 1.0;	// Maximum random value
+	float H = 1.0;			// Roughness co-efficient
+
+	for (int x = 0; x < MAP_SIZE; x++) {
+		for (int z = 0; z < MAP_SIZE; z++) {
 			terrain[x][z] = 0;
 		}
 	}
@@ -218,19 +237,19 @@ void setup(void)
 	terrain[MAP_SIZE - 1][0] = rand() % 3 - 1;
 	terrain[MAP_SIZE - 1][MAP_SIZE - 1] = rand() % 3 - 1;
 
-	// Diamond Square Algorithm
-	while (step_size > 1)
-	{
-		//cout << "Current Step Size: " << step_size << "\n";
+	//////////////////////////////////
+	//								//
+	// Diamond Square Algorithm		//
+	//								//
+	//////////////////////////////////
+	while (step_size > 1) {
 		for (int x(0); x < MAP_SIZE - 1; x += step_size)
-			for (int y(0); y < MAP_SIZE - 1; y += step_size)
-			{
+			for (int y(0); y < MAP_SIZE - 1; y += step_size) {
 			diamondStep(x, y);
 			}
 
 		for (int x(0); x < MAP_SIZE - 1; x += step_size)
-			for (int y(0); y < MAP_SIZE - 1; y += step_size)
-			{
+			for (int y(0); y < MAP_SIZE - 1; y += step_size) {
 			squareStep(x, y);
 			}
 
@@ -238,32 +257,38 @@ void setup(void)
 		step_size = step_size / 2;
 	}
 
-	///////////////////////////////////////
-
-	// Vertex Normal Setup - 
-	// WORKS BUT NOT CORRECT
+	//////////////////////////////////////
+	//									//
+	// Vertex Normal Setup				//
+	//									//
+	//////////////////////////////////////
 	
 	TriNorm triangle;
 
 	vec3 edgeOne, edgeTwo, normOne, normTwo;
 
-	// Triangle Norms
-	// Use MAP_SIZE - 2 so that it never reaches the ends of the terrain
-	for (int x(0); x < MAP_SIZE - 2; x++)
-	{
-		for (int y(0); y < MAP_SIZE - 2; y++)
-		{
-			// Tri 0 Left
+	//////////////////////////////////////////////////////////////////////////
+	//																		//
+	// Triangle Norms														//
+	// Use MAP_SIZE - 2 so that it never reaches the ends of the terrain	//
+	//																		//
+	//////////////////////////////////////////////////////////////////////////
+
+	for (int x(0); x < MAP_SIZE - 2; x++) {
+		for (int y(0); y < MAP_SIZE - 2; y++) {
+			// Triangle 1 Setup
+
+			// Left Side
 			triangle.PointOne.x = x;
 			triangle.PointOne.y = y;
 			triangle.PointOne.z = terrain[x][y];
 
-			// Tri 0 Right
+			// Right Side
 			triangle.PointTwo.x = x + 1;
 			triangle.PointTwo.y = y;
 			triangle.PointTwo.z = terrain[x + 1][y];
 
-			// Tri 0 Bottom
+			// Bottom Side
 			triangle.PointThree.x = x;
 			triangle.PointThree.y = y + 1;
 			triangle.PointThree.z = terrain[x][y + 1];
@@ -275,17 +300,19 @@ void setup(void)
 
 			terrainVertices[x + MAP_SIZE + 1].normals += normOne;
 
-			// Tri 1 Left
+			// Triangle 2 Setup
+			
+			// Left Side
 			triangle.PointOne.x = x;
 			triangle.PointOne.y = y + 1;
 			triangle.PointOne.z = terrain[x][y + 1];
 
-			// Tri 1 Right
+			// Right Side
 			triangle.PointTwo.x = x + 1;
 			triangle.PointTwo.y = y;
 			triangle.PointTwo.z = terrain[x + 1][y];
 
-			// Tri 1 Bottom
+			// Bottom Side
 			triangle.PointThree.x = x + 1;
 			triangle.PointThree.y = y + 1;
 			triangle.PointThree.z = terrain[x + 1][y + 1];
@@ -299,81 +326,66 @@ void setup(void)
 		}
 	}
 
-	// Vertex Norms 
+	//////////////////////////
+	//						//
+	// Vertex Norms			//
+	//						//
+	//////////////////////////
 
 	for (int x(0); x < MAP_SIZE - 2; x++)
-		for (int y(0); y < MAP_SIZE - 2; y++)
-		{
+		for (int y(0); y < MAP_SIZE - 2; y++) {
 		// Top Left
-		if (x == 0 && y == 0)
-		{
+		if (x == 0 && y == 0) {
 			// Only do [x + 1][y + 1]
 			terrainVertices[1].normals = normalize(terrainVertices[1 + (1 + (MAP_SIZE))].normals);
-			//cout << "Top Left \n";
 		}
 
 		// Top Right
-		if (x == 0 && y == MAP_SIZE - 1)
-		{
+		if (x == 0 && y == MAP_SIZE - 1) {
 			// Only do [x - 1][y + 1]
 			terrainVertices[MAP_SIZE].normals = normalize(terrainVertices[(MAP_SIZE - 1) + MAP_SIZE].normals);
-			//cout << "Top Right \n";
 		}
 
 		// Bottom Left
-		if (x == 0 && y == MAP_SIZE - 1)
-		{
+		if (x == 0 && y == MAP_SIZE - 1) {
 			// Only do [x + 1][y - 1]
 			terrainVertices[(MAP_SIZE * MAP_SIZE) - (MAP_SIZE + 1)].normals = normalize(terrainVertices[((MAP_SIZE * MAP_SIZE) - (MAP_SIZE + 1)) - (MAP_SIZE + 1)].normals);
-			//cout << "Bottom Left \n";
 		}
 
 		// Bottom Right
-		if (x == MAP_SIZE - 1 && y == MAP_SIZE - 1)
-		{
+		if (x == MAP_SIZE - 1 && y == MAP_SIZE - 1) {
 			// Only do [x - 1][y - 1]
 			terrainVertices[(MAP_SIZE * MAP_SIZE)].normals = normalize(terrainVertices[(MAP_SIZE * MAP_SIZE) - (MAP_SIZE + 1)].normals);
-			//cout << "Bottom Right \n";
 		}
 
 		// Left Column
-		if (x == 0 && (y > 0 || y < MAP_SIZE - 2))
-		{
+		if (x == 0 && (y > 0 || y < MAP_SIZE - 2)) {
 			// Only do [x + 1][y - 1] and [x + 1][y + 1]
 			terrainVertices[(MAP_SIZE * y)].normals = normalize(terrainVertices[(1 + (MAP_SIZE * y)) + (MAP_SIZE + 1)].normals + terrainVertices[(1 + (MAP_SIZE * y)) + (MAP_SIZE - 1)].normals);
-			//cout << "Left Column \n";
 		}
 
 		// Right Column
-		if (x == MAP_SIZE - 1 && (y > 0 || y < MAP_SIZE - 2))
-		{
+		if (x == MAP_SIZE - 1 && (y > 0 || y < MAP_SIZE - 2)) {
 			// Only do [x - 1][y - 1] and [x - 1][y + 1]
 			terrainVertices[(MAP_SIZE * y)].normals = normalize(terrainVertices[(1 + (MAP_SIZE * y)) - (MAP_SIZE + 1)].normals + terrainVertices[(1 + (MAP_SIZE * y)) + (MAP_SIZE - 1)].normals);
-			//cout << "Right Column \n";
 		}
 
 		// Top Row
-		if (y == 0 && (x > 0 || x < MAP_SIZE - 2))
-		{
+		if (y == 0 && (x > 0 || x < MAP_SIZE - 2)) {
 			// Only do [x - 1][y + 1] and [x + 1] [y + 1]
 			terrainVertices[x].normals = normalize(terrainVertices[(1 + x) + (MAP_SIZE - 1)].normals + terrainVertices[(1 + x) + (MAP_SIZE + 1)].normals);
-			//cout << "Top Row \n";
 		}
 
 		// Bottom Row
-		if (y == MAP_SIZE - 1 && (x > 0 || x < MAP_SIZE - 1))
-		{
+		if (y == MAP_SIZE - 1 && (x > 0 || x < MAP_SIZE - 1)) {
 			// Only do [x - 1][y - 1] and [x + 1] [y - 1]
 			terrainVertices[x].normals = normalize(terrainVertices[(1 + (MAP_SIZE * y)) - (MAP_SIZE + 1)].normals + terrainVertices[(1 + x) - (MAP_SIZE + 1)].normals);
-			//cout << "Bottom Row \n";
 		}
 
-		else
-		{
+		else {
 			// Do [x - 1][y - 1], [x + 1][y - 1], [x - 1][y + 1], [x + 1][y + 1]
 			terrainVertices[x + (MAP_SIZE * y)].normals = normalize(terrainVertices[x + ((MAP_SIZE * y) - 1)].normals + terrainVertices[x - ((MAP_SIZE * y) - 1)].normals
 				+ terrainVertices[x - ((MAP_SIZE * y) + 1)].normals + terrainVertices[x + ((MAP_SIZE * y) + 1)].normals);
-			//cout << "Inside Terrain \n";
 		}
 		}
 
@@ -382,27 +394,22 @@ void setup(void)
 	// Intialise vertex array
 	int i = 0;
 
-	for (int z = 0; z < MAP_SIZE; z++)
-	{
-		for (int x = 0; x < MAP_SIZE; x++)
-		{
+	for (int z = 0; z < MAP_SIZE; z++) {
+		for (int x = 0; x < MAP_SIZE; x++) {
 			// Set the coords (1st 4 elements) and a default colour of black (2nd 4 elements) 
 			terrainVertices[i] = { { (float)x, terrain[x][z], (float)z, 1.0 }, { 0.0, 0.0, 0.0, 1.0 } };
 			i++;
 		}
 	}
 
-	// Now build the index data 
-	for (int z = 0; z < MAP_SIZE - 1; z++)
-	{
+	// Builds index data 
+	for (int z = 0; z < MAP_SIZE - 1; z++) {
 		i = z * MAP_SIZE;
-		for (int x = 0; x < MAP_SIZE * 2; x += 2)
-		{
+		for (int x = 0; x < MAP_SIZE * 2; x += 2) {
 			terrainIndexData[z][x] = i;
 			i++;
 		}
-		for (int x = 1; x < MAP_SIZE * 2 + 1; x += 2)
-		{
+		for (int x = 1; x < MAP_SIZE * 2 + 1; x += 2) {
 			terrainIndexData[z][x] = i;
 			i++;
 		}
@@ -427,6 +434,7 @@ void setup(void)
 	glAttachShader(programId, fragmentShaderId);
 	glLinkProgram(programId);
 	glUseProgram(programId);
+
 	///////////////////////////////////////
 
 	// Create vertex array object (VAO) and vertex buffer object (VBO) and associate data with vertex shader.
@@ -486,8 +494,7 @@ void setup(void)
 }
 
 // Drawing routine.
-void drawScene(void)
-{
+void drawScene(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// 2D Camera View
@@ -495,8 +502,7 @@ void drawScene(void)
 	glUniformMatrix4fv(modelViewMatLoc, 1, GL_FALSE, value_ptr(modelViewMat));
 
 	// For each row - draw the triangle strip
-	for (int i = 0; i < MAP_SIZE - 1; i++)
-	{
+	for (int i = 0; i < MAP_SIZE - 1; i++) {
 		glDrawElements(GL_TRIANGLE_STRIP, verticesPerStrip, GL_UNSIGNED_INT, terrainIndexData[i]);
 	}
 
@@ -504,16 +510,13 @@ void drawScene(void)
 }
 
 // OpenGL window reshape routine.
-void resize(int w, int h)
-{
+void resize(int w, int h) {
 	glViewport(0, 0, w, h);
 }
 
 // Keyboard input processing routine.
-void keyInput(unsigned char key, int x, int y)
-{
-	switch (key)
-	{
+void keyInput(unsigned char key, int x, int y) {
+	switch (key) {
 		// Strafes Right
 	case 'a':
 		camera -= cross(los, up) * (speed / 10);
@@ -585,8 +588,7 @@ void keyInput(unsigned char key, int x, int y)
 }
 
 // Main routine.
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
 	glutInit(&argc, argv);
 
 	// Set the version of OpenGL (4.2)
